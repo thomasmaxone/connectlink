@@ -1,0 +1,78 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// MongoDB connection
+mongoose.connect('mongodb://localhost:27017/analystnotebook', { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Models
+const EntitySchema = new mongoose.Schema({
+  label: String,
+  type: String,
+  properties: Object,
+});
+
+const LinkSchema = new mongoose.Schema({
+  source: String,
+  target: String,
+  label: String,
+  type: String,
+  properties: Object,
+});
+
+const Entity = mongoose.model('Entity', EntitySchema);
+const Link = mongoose.model('Link', LinkSchema);
+
+// CRUD ENDPOINTS
+// Entities
+app.get('/entities', async (req, res) => {
+  const entities = await Entity.find();
+  res.json(entities);
+});
+
+app.post('/entities', async (req, res) => {
+  const entity = new Entity(req.body);
+  await entity.save();
+  res.json(entity);
+});
+
+app.put('/entities/:id', async (req, res) => {
+  const entity = await Entity.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(entity);
+});
+
+app.delete('/entities/:id', async (req, res) => {
+  await Entity.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
+// Links
+app.get('/links', async (req, res) => {
+  const links = await Link.find();
+  res.json(links);
+});
+
+app.post('/links', async (req, res) => {
+  const link = new Link(req.body);
+  await link.save();
+  res.json(link);
+});
+
+app.put('/links/:id', async (req, res) => {
+  const link = await Link.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(link);
+});
+
+app.delete('/links/:id', async (req, res) => {
+  await Link.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
+// Start server
+app.listen(4000, () => {
+  console.log('Server started on http://localhost:4000');
+});
